@@ -26,7 +26,7 @@ Make sure you install the latest hdt-java 2.1-SNAPSHOT before compiling Tarql.
 
 1. Download geeky CSV file:
 
-`$ wget https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents-financials.csv
+`$ wget https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents-financials.csv`
 
 2. Write typical select all query to see what's in there in file `all.sparql`:
 
