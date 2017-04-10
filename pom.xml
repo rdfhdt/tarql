@@ -39,12 +39,17 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
-      <version>3.1.1</version>
+      <version>3.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-cmds</artifactId>
-      <version>3.1.1</version>
+      <version>3.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.rdfhdt</groupId>
+      <artifactId>hdt-jena</artifactId>
+      <version>2.1-SNAPSHOT</version>
     </dependency>
     <!-- We use a custom build of OpenCSV with Patch #54. To build:
 

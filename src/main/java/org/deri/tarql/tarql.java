@@ -19,6 +19,7 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.NullIterator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.deri.tarql.hdt.HDTWriter;
 
 import jena.cmd.ArgDecl;
 import jena.cmd.CmdGeneral;
@@ -63,6 +64,7 @@ public class tarql extends CmdGeneral {
 	private final ArgDecl withoutHeaderArg = new ArgDecl(false, "no-header-row", "no-header", "H");
 	private final ArgDecl encodingArg = new ArgDecl(true, "encoding", "e");
 	private final ArgDecl nTriplesArg = new ArgDecl(false, "ntriples");
+	private final ArgDecl hdtArg = new ArgDecl(true, "hdt");
 	private final ArgDecl delimiterArg = new ArgDecl(true, "delimiter", "d");
 	private final ArgDecl tabsArg = new ArgDecl(false, "tabs", "tab", "t");
 	private final ArgDecl quoteArg = new ArgDecl(true, "quotechar");
@@ -75,6 +77,7 @@ public class tarql extends CmdGeneral {
 	private CSVOptions options = new CSVOptions();
 	private boolean testQuery = false;
 	private boolean writeNTriples = false;
+	private String outHDT = null;
 	private String baseIRI = null;
 
 	private ExtendedIterator<Triple> resultTripleIterator = NullIterator.instance();
@@ -93,6 +96,7 @@ public class tarql extends CmdGeneral {
 		add(withHeaderArg,    "--header-row", "Input file's first row is a header with variable names (default)");
 		add(baseArg,          "--base", "Base IRI for resolving relative IRIs");
 		add(nTriplesArg,      "--ntriples", "Write N-Triples instead of Turtle");
+		add(hdtArg,           "--hdt", "Write HDT instead of Turtle (requires --base)");
 		getUsage().startCategory("Main arguments");
 		getUsage().addUsage("query.sparql", "File containing a SPARQL query to be applied to an input file");
 		getUsage().addUsage("table.csv", "CSV/TSV file to be processed; can be omitted if specified in FROM clause");
@@ -135,6 +139,13 @@ public class tarql extends CmdGeneral {
 		}
 		if (hasArg(nTriplesArg)) {
 			writeNTriples = true;
+		}
+		if (hasArg(hdtArg)) {
+			if(!hasArg(baseArg)) {
+				cmdError("To use --hdt you must also provide a base URI using --base");
+			}
+			
+			outHDT = getValue(hdtArg);
 		}
 		if (hasArg(tabsArg)) {
 			options.setDefaultsForTSV();
@@ -183,13 +194,18 @@ public class tarql extends CmdGeneral {
 				}
 			}
 			if (resultTripleIterator.hasNext()) {
-				StreamingRDFWriter writer = new StreamingRDFWriter(System.out, resultTripleIterator);
-				if (writeNTriples) {
-					writer.writeNTriples();
+				if(outHDT!=null) {
+					HDTWriter writerHDT = new HDTWriter(outHDT, resultTripleIterator, baseIRI);
+					writerHDT.writeHDT();					
 				} else {
-					writer.writeTurtle(
-							q.getPrologue().getBaseURI(),
-							q.getPrologue().getPrefixMapping());
+					StreamingRDFWriter writer = new StreamingRDFWriter(System.out, resultTripleIterator);
+					if (writeNTriples) {
+						writer.writeNTriples();
+					} else {
+						writer.writeTurtle(
+								q.getPrologue().getBaseURI(),
+								q.getPrologue().getPrefixMapping());
+					}
 				}
 			}
 		} catch (NotFoundException ex) {
